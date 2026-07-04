@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economía doméstica — Transferencias</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F7F6F2;
+      --surface:   #FFFFFF;
+      --border:    #E2E0D8;
+      --text:      #1A1A18;
+      --muted:     #6B6A64;
+      --accent:    #2A6B4F;
+      --accent-h:  #1E5039;
+      --accent-bg: #EAF4EF;
+      --danger:    #B83B3B;
+      --danger-bg: #FCEEEE;
+      --radius:    10px;
+      --shadow:    0 2px 12px rgba(0,0,0,0.07);
+      --nav-w:     220px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #141412;
+        --surface:   #1E1E1B;
+        --border:    #2E2E2A;
+        --text:      #F0EFE9;
+        --muted:     #8A8980;
+        --accent:    #3D9970;
+        --accent-h:  #2E7A57;
+        --accent-bg: #0E2A1E;
+        --danger-bg: #2D1515;
+      }
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      display: flex;
+    }
+
+    nav {
+      width: var(--nav-w);
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 10;
+    }
+
+    .nav-logo { display: flex; align-items: center; gap: .6rem; padding: 0 .5rem; margin-bottom: 2rem; }
+    .nav-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .nav-logo-icon svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-logo-text { font-size: .9rem; font-weight: 600; }
+
+    .nav-section { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 0 .5rem; margin: 1.2rem 0 .4rem; }
+
+    .nav-link { display: flex; align-items: center; gap: .6rem; padding: .55rem .75rem; border-radius: 7px; text-decoration: none; color: var(--muted); font-size: .875rem; font-weight: 500; transition: background .12s, color .12s; margin-bottom: 2px; }
+    .nav-link:hover { background: var(--bg); color: var(--text); }
+    .nav-link.active { background: var(--accent-bg); color: var(--accent); }
+    .nav-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+    .nav-bottom { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+    .nav-user { display: flex; align-items: center; gap: .6rem; padding: .5rem .75rem; border-radius: 7px; }
+    .nav-avatar { width: 28px; height: 28px; background: var(--accent-bg); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; flex-shrink: 0; }
+    .nav-user-name { font-size: .8125rem; font-weight: 500; flex: 1; }
+    .btn-logout { background: none; border: none; color: var(--muted); cursor: pointer; padding: .25rem; border-radius: 4px; display: flex; align-items: center; transition: color .12s; }
+    .btn-logout:hover { color: var(--danger); }
+    .btn-logout svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    main {
+      margin-left: var(--nav-w);
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: 860px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-title { font-size: 1.4rem; font-weight: 600; letter-spacing: -.02em; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: .6rem 1.1rem;
+      font-size: .8125rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: background .15s;
+    }
+
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    .tabs {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: .6rem 1rem;
+      font-size: .8125rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-family: inherit;
+      margin-bottom: -1px;
+      transition: color .12s, border-color .12s;
+    }
+
+    .tab.active { color: var(--accent); border-color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--text); }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .trans-list { list-style: none; }
+
+    .trans-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .9rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .8125rem;
+      gap: 1rem;
+    }
+
+    .trans-item:last-child { border-bottom: none; }
+
+    .trans-left { display: flex; align-items: center; gap: .85rem; min-width: 0; }
+
+    .trans-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--accent-bg);
+      color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .trans-icon.pendiente { background: var(--danger-bg); color: var(--danger); }
+    .trans-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .trans-info { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+    .trans-desc { font-weight: 500; }
+    .trans-meta { color: var(--muted); font-size: .75rem; }
+
+    .trans-right { display: flex; align-items: center; gap: .85rem; flex-shrink: 0; }
+    .trans-importe { font-weight: 600; min-width: 90px; text-align: right; }
+
+    .badge {
+      font-size: .7rem;
+      font-weight: 500;
+      padding: .2rem .55rem;
+      border-radius: 5px;
+    }
+
+    .badge.completada { background: var(--accent-bg); color: var(--accent); }
+
+    .btn-confirmar {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: none;
+      border-radius: 6px;
+      padding: .4rem .8rem;
+      font-size: .75rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .12s, color .12s;
+    }
+
+    .btn-confirmar:hover { background: var(--accent); color: #fff; }
+
+    .empty, .loading {
+      padding: 2.5rem 1.25rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: .8125rem;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+
+    .modal-overlay.visible { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 420px;
+      padding: 1.75rem;
+    }
+
+    .modal h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; }
+
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: .8125rem; font-weight: 500; margin-bottom: .35rem; }
+    .field input, .field select { width: 100%; }
+
+    select, input {
+      padding: .5rem .7rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: .8125rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    select:focus, input:focus { border-color: var(--accent); }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+
+    .swap-btn {
+      display: flex;
+      justify-content: center;
+      margin: -.5rem 0 .5rem;
+    }
+
+    .swap-btn button {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: color .12s, border-color .12s;
+    }
+
+    .swap-btn button:hover { color: var(--accent); border-color: var(--accent); }
+    .swap-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .modal-actions {
+      display: flex;
+      gap: .6rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .65rem;
+      font-size: .8125rem;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-secondary:hover { border-color: var(--muted); }
+    .modal-actions .btn-primary { flex: 1; justify-content: center; }
+
+    .error {
+      display: none;
+      background: var(--danger-bg);
+      color: var(--danger);
+      font-size: .8125rem;
+      padding: .6rem .85rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .error.visible { display: block; }
+
+    @media (max-width: 768px) {
+      nav { display: none; }
+      main { margin-left: 0; padding: 1.25rem; }
+      .field-row { grid-template-columns: 1fr; }
+      .trans-meta { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      </div>
+      <span class="nav-logo-text">Casa</span>
+    </div>
+
+    <div class="nav-section">Principal</div>
+    <a href="/dashboard.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="/movimientos.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+      Movimientos
+    </a>
+    <a href="/informes.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Informes
+    </a>
+
+    <div class="nav-section">Gestión</div>
+    <a href="/transferencias.html" class="nav-link active">
+      <svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+      Transferencias
+    </a>
+    <a href="/categorias.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h6"/></svg>
+      Categorías
+    </a>
+
+    <div class="nav-bottom">
+      <div class="nav-user">
+        <div class="nav-avatar" id="nav-avatar">?</div>
+        <span class="nav-user-name" id="nav-nombre">—</span>
+        <button class="btn-logout" onclick="logout()" title="Cerrar sesión">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1 class="page-title">Transferencias</h1>
+      <button class="btn-primary" onclick="abrirModal()">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva transferencia
+      </button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-pendientes" onclick="cambiarTab('pendientes')">Pendientes</button>
+      <button class="tab" id="tab-completadas" onclick="cambiarTab('completadas')">Completadas</button>
+      <button class="tab" id="tab-todas" onclick="cambiarTab('todas')">Todas</button>
+    </div>
+
+    <div class="panel">
+      <ul class="trans-list" id="lista-transferencias">
+        <li class="loading">Cargando…</li>
+      </ul>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h2>Nueva transferencia</h2>
+
+      <div class="error" id="modal-error"></div>
+
+      <div class="field">
+        <label for="t-origen">Cuenta de origen</label>
+        <select id="t-origen"></select>
+      </div>
+
+      <div class="swap-btn">
+        <button type="button" onclick="intercambiarCuentas()" title="Intercambiar">
+          <svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+        </button>
+      </div>
+
+      <div class="field">
+        <label for="t-destino">Cuenta de destino</label>
+        <select id="t-destino"></select>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="t-importe">Importe (€)</label>
+          <input type="number" id="t-importe" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="field">
+          <label for="t-fecha">Fecha</label>
+          <input type="date" id="t-fecha">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="t-descripcion">Descripción (opcional)</label>
+        <input type="text" id="t-descripcion" placeholder="Ej: Asignación mensual">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-primary" onclick="guardarTransferencia()">Crear</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/index.html';
+
+    const nombre = localStorage.getItem('nombre') || '?';
+    document.getElementById('nav-nombre').textContent = nombre;
+    document.getElementById('nav-avatar').textContent = nombre.charAt(0).toUpperCase();
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/index.html';
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(`${API}${path}`, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+          ...options.headers,
+        },
+      });
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/index.html';
+        return;
+      }
+      if (res.status === 204) return null;
+      return res.json();
+    }
+
+    function fmt(importe) {
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(importe);
+    }
+
+    function formatFecha(f) {
+      const [y, m, d] = f.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    let cuentas = [];
+    let tabActual = 'pendientes';
+
+    async function init() {
+      cuentas = await api('/cuentas');
+
+      const origen = document.getElementById('t-origen');
+      const destino = document.getElementById('t-destino');
+      cuentas.forEach(c => {
+        origen.innerHTML  += `<option value="${c.id}">${c.nombre}</option>`;
+        destino.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+      });
+      const comun = cuentas.find(c => c.tipo === 'comun');
+      const personal = cuentas.find(c => c.tipo === 'personal');
+      if (comun) origen.value = comun.id;
+      if (personal) destino.value = personal.id;
+
+      await cargarTransferencias();
+    }
+
+    function cambiarTab(tab) {
+      tabActual = tab;
+      document.getElementById('tab-pendientes').classList.toggle('active', tab === 'pendientes');
+      document.getElementById('tab-completadas').classList.toggle('active', tab === 'completadas');
+      document.getElementById('tab-todas').classList.toggle('active', tab === 'todas');
+      cargarTransferencias();
+    }
+
+    async function cargarTransferencias() {
+      const lista = document.getElementById('lista-transferencias');
+      lista.innerHTML = '<li class="loading">Cargando…</li>';
+
+      let query = '';
+      if (tabActual === 'pendientes') query = '?completada=false';
+      if (tabActual === 'completadas') query = '?completada=true';
+
+      const trans = await api(`/transferencias${query}`);
+
+      if (!trans.length) {
+        const mensaje = tabActual === 'pendientes'
+          ? 'No hay transferencias pendientes.'
+          : tabActual === 'completadas'
+            ? 'No hay transferencias completadas.'
+            : 'No hay transferencias registradas.';
+        lista.innerHTML = `<li class="empty">${mensaje}</li>`;
+        return;
+      }
+
+      lista.innerHTML = trans.map(t => `
+        <li class="trans-item">
+          <div class="trans-left">
+            <div class="trans-icon ${t.completada ? '' : 'pendiente'}">
+              <svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+            </div>
+            <div class="trans-info">
+              <span class="trans-desc">${t.descripcion || 'Transferencia'}</span>
+              <span class="trans-meta">${t.cuenta_origen_nombre} → ${t.cuenta_destino_nombre} · ${formatFecha(t.fecha)}</span>
+            </div>
+          </div>
+          <div class="trans-right">
+            <span class="trans-importe">${fmt(t.importe)}</span>
+            ${t.completada
+              ? '<span class="badge completada">Completada</span>'
+              : `<button class="btn-confirmar" onclick="confirmarTransferencia(${t.id})">Confirmar</button>`
+            }
+          </div>
+        </li>`
+      ).join('');
+    }
+
+    async function confirmarTransferencia(id) {
+      const res = await api(`/transferencias/${id}/confirmar`, { method: 'PUT' });
+      if (res && res.detail) {
+        alert(res.detail);
+        return;
+      }
+      await cargarTransferencias();
+    }
+
+    function abrirModal() {
+      document.getElementById('modal-error').classList.remove('visible');
+      document.getElementById('t-importe').value = '';
+      document.getElementById('t-descripcion').value = '';
+      document.getElementById('t-fecha').value = new Date().toISOString().split('T')[0];
+      document.getElementById('modal-overlay').classList.add('visible');
+    }
+
+    function cerrarModal() {
+      document.getElementById('modal-overlay').classList.remove('visible');
+    }
+
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target.id === 'modal-overlay') cerrarModal();
+    });
+
+    function intercambiarCuentas() {
+      const origen = document.getElementById('t-origen');
+      const destino = document.getElementById('t-destino');
+      const tmp = origen.value;
+      origen.value = destino.value;
+      destino.value = tmp;
+    }
+
+    async function guardarTransferencia() {
+      const cuenta_origen_id = parseInt(document.getElementById('t-origen').value);
+      const cuenta_destino_id = parseInt(document.getElementById('t-destino').value);
+      const importe = parseFloat(document.getElementById('t-importe').value);
+      const fecha = document.getElementById('t-fecha').value;
+      const descripcion = document.getElementById('t-descripcion').value.trim() || null;
+
+      if (cuenta_origen_id === cuenta_destino_id) {
+        mostrarError('Las cuentas de origen y destino deben ser distintas.');
+        return;
+      }
+      if (!importe || importe <= 0) {
+        mostrarError('Introduce un importe válido mayor que 0.');
+        return;
+      }
+      if (!fecha) {
+        mostrarError('Selecciona una fecha.');
+        return;
+      }
+
+      const res = await api('/transferencias', {
+        method: 'POST',
+        body: JSON.stringify({ cuenta_origen_id, cuenta_destino_id, importe, fecha, descripcion }),
+      });
+
+      if (res && res.detail) {
+        mostrarError(typeof res.detail === 'string' ? res.detail : 'Error al crear la transferencia.');
+        return;
+      }
+
+      cerrarModal();
+      if (tabActual === 'completadas') cambiarTab('pendientes');
+      else await cargarTransferencias();
+    }
+
+    function mostrarError(msg) {
+      const el = document.getElementById('modal-error');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+
+    init();
+  </script>
+</body>
+</html>

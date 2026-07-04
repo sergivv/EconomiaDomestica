@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economía doméstica — Categorías</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F7F6F2;
+      --surface:   #FFFFFF;
+      --border:    #E2E0D8;
+      --text:      #1A1A18;
+      --muted:     #6B6A64;
+      --accent:    #2A6B4F;
+      --accent-h:  #1E5039;
+      --accent-bg: #EAF4EF;
+      --danger:    #B83B3B;
+      --danger-bg: #FCEEEE;
+      --radius:    10px;
+      --shadow:    0 2px 12px rgba(0,0,0,0.07);
+      --nav-w:     220px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #141412;
+        --surface:   #1E1E1B;
+        --border:    #2E2E2A;
+        --text:      #F0EFE9;
+        --muted:     #8A8980;
+        --accent:    #3D9970;
+        --accent-h:  #2E7A57;
+        --accent-bg: #0E2A1E;
+        --danger-bg: #2D1515;
+      }
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      display: flex;
+    }
+
+    nav {
+      width: var(--nav-w);
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 10;
+    }
+
+    .nav-logo { display: flex; align-items: center; gap: .6rem; padding: 0 .5rem; margin-bottom: 2rem; }
+    .nav-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .nav-logo-icon svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-logo-text { font-size: .9rem; font-weight: 600; }
+
+    .nav-section { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 0 .5rem; margin: 1.2rem 0 .4rem; }
+
+    .nav-link { display: flex; align-items: center; gap: .6rem; padding: .55rem .75rem; border-radius: 7px; text-decoration: none; color: var(--muted); font-size: .875rem; font-weight: 500; transition: background .12s, color .12s; margin-bottom: 2px; }
+    .nav-link:hover { background: var(--bg); color: var(--text); }
+    .nav-link.active { background: var(--accent-bg); color: var(--accent); }
+    .nav-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+    .nav-bottom { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+    .nav-user { display: flex; align-items: center; gap: .6rem; padding: .5rem .75rem; border-radius: 7px; }
+    .nav-avatar { width: 28px; height: 28px; background: var(--accent-bg); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; flex-shrink: 0; }
+    .nav-user-name { font-size: .8125rem; font-weight: 500; flex: 1; }
+    .btn-logout { background: none; border: none; color: var(--muted); cursor: pointer; padding: .25rem; border-radius: 4px; display: flex; align-items: center; transition: color .12s; }
+    .btn-logout:hover { color: var(--danger); }
+    .btn-logout svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    main {
+      margin-left: var(--nav-w);
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: 860px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-title { font-size: 1.4rem; font-weight: 600; letter-spacing: -.02em; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: .6rem 1.1rem;
+      font-size: .8125rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: background .15s;
+    }
+
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title { font-size: .9375rem; font-weight: 600; }
+
+    .panel-title .badge-tipo {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+    }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.ing   { background: var(--accent); }
+    .dot.gasto { background: var(--danger); }
+
+    .cat-list { list-style: none; }
+
+    .cat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .8125rem;
+      gap: .75rem;
+    }
+
+    .cat-item:last-child { border-bottom: none; }
+
+    .cat-name { font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .cat-name-input {
+      flex: 1;
+      padding: .35rem .6rem;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: .8125rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .badge {
+      font-size: .7rem;
+      font-weight: 500;
+      padding: .2rem .5rem;
+      border-radius: 5px;
+      background: var(--bg);
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .cat-actions { display: flex; gap: .3rem; flex-shrink: 0; }
+
+    .icon-btn {
+      width: 28px; height: 28px;
+      border: none;
+      background: none;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: background .12s, color .12s;
+    }
+
+    .icon-btn:hover { background: var(--bg); color: var(--text); }
+    .icon-btn.danger:hover { background: var(--danger-bg); color: var(--danger); }
+    .icon-btn.accent:hover { background: var(--accent-bg); color: var(--accent); }
+    .icon-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .icon-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .icon-btn:disabled:hover { background: none; color: var(--muted); }
+
+    .empty, .loading {
+      padding: 2rem 1.25rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: .8125rem;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+
+    .modal-overlay.visible { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 380px;
+      padding: 1.75rem;
+    }
+
+    .modal h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; }
+
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: .8125rem; font-weight: 500; margin-bottom: .35rem; }
+    .field input, .field select { width: 100%; }
+
+    select, input {
+      padding: .5rem .7rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: .8125rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    select:focus, input:focus { border-color: var(--accent); }
+
+    .tipo-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .tipo-btn {
+      flex: 1;
+      padding: .55rem;
+      text-align: center;
+      font-size: .8125rem;
+      font-weight: 500;
+      background: var(--bg);
+      color: var(--muted);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s, color .15s;
+    }
+
+    .tipo-btn.active.ing   { background: var(--accent-bg); color: var(--accent); }
+    .tipo-btn.active.gasto { background: var(--danger-bg); color: var(--danger); }
+
+    .modal-actions { display: flex; gap: .6rem; margin-top: 1.5rem; }
+
+    .btn-secondary {
+      flex: 1;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .65rem;
+      font-size: .8125rem;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-secondary:hover { border-color: var(--muted); }
+    .modal-actions .btn-primary { flex: 1; justify-content: center; }
+
+    .error {
+      display: none;
+      background: var(--danger-bg);
+      color: var(--danger);
+      font-size: .8125rem;
+      padding: .6rem .85rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .error.visible { display: block; }
+
+    .info-note {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      nav { display: none; }
+      main { margin-left: 0; padding: 1.25rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      </div>
+      <span class="nav-logo-text">Casa</span>
+    </div>
+
+    <div class="nav-section">Principal</div>
+    <a href="/dashboard.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="/movimientos.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+      Movimientos
+    </a>
+    <a href="/informes.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Informes
+    </a>
+
+    <div class="nav-section">Gestión</div>
+    <a href="/transferencias.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+      Transferencias
+    </a>
+    <a href="/categorias.html" class="nav-link active">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h6"/></svg>
+      Categorías
+    </a>
+
+    <div class="nav-bottom">
+      <div class="nav-user">
+        <div class="nav-avatar" id="nav-avatar">?</div>
+        <span class="nav-user-name" id="nav-nombre">—</span>
+        <button class="btn-logout" onclick="logout()" title="Cerrar sesión">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1 class="page-title">Categorías</h1>
+      <button class="btn-primary" onclick="abrirModal()">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva categoría
+      </button>
+    </div>
+
+    <p class="info-note">
+      Las categorías del sistema (marcadas como "Sistema") se pueden renombrar pero no eliminar.
+      Las categorías propias se pueden renombrar y eliminar siempre que no tengan movimientos asociados.
+    </p>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title"><span class="badge-tipo"><span class="dot gasto"></span>Gastos</span></span>
+        </div>
+        <ul class="cat-list" id="lista-gastos">
+          <li class="loading">Cargando…</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title"><span class="badge-tipo"><span class="dot ing"></span>Ingresos</span></span>
+        </div>
+        <ul class="cat-list" id="lista-ingresos">
+          <li class="loading">Cargando…</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal nueva categoría -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h2>Nueva categoría</h2>
+
+      <div class="error" id="modal-error"></div>
+
+      <div class="tipo-toggle">
+        <button type="button" class="tipo-btn active gasto" id="tipo-gasto" onclick="setTipo('gasto')">Gasto</button>
+        <button type="button" class="tipo-btn ing" id="tipo-ingreso" onclick="setTipo('ingreso')">Ingreso</button>
+      </div>
+
+      <div class="field">
+        <label for="c-nombre">Nombre</label>
+        <input type="text" id="c-nombre" placeholder="Ej: Mascotas" autofocus>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-primary" onclick="crearCategoria()">Crear</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/index.html';
+
+    const nombre = localStorage.getItem('nombre') || '?';
+    document.getElementById('nav-nombre').textContent = nombre;
+    document.getElementById('nav-avatar').textContent = nombre.charAt(0).toUpperCase();
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/index.html';
+    }
+
+    async function api(path, options = {}) {
+      const res = await fetch(`${API}${path}`, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+          ...options.headers,
+        },
+      });
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/index.html';
+        return;
+      }
+      if (res.status === 204) return null;
+      return res.json();
+    }
+
+    let categorias = [];
+    let tipoActual = 'gasto';
+
+    async function init() {
+      await cargarCategorias();
+    }
+
+    async function cargarCategorias() {
+      categorias = await api('/categorias');
+      renderLista('gasto', 'lista-gastos');
+      renderLista('ingreso', 'lista-ingresos');
+    }
+
+    function renderLista(tipo, contenedorId) {
+      const cont = document.getElementById(contenedorId);
+      const items = categorias.filter(c => c.tipo === tipo);
+
+      if (!items.length) {
+        cont.innerHTML = '<li class="empty">No hay categorías.</li>';
+        return;
+      }
+
+      cont.innerHTML = items.map(c => `
+        <li class="cat-item" data-id="${c.id}">
+          <span class="cat-name" id="nombre-${c.id}">${c.nombre}</span>
+          ${c.es_sistema ? '<span class="badge">Sistema</span>' : ''}
+          <div class="cat-actions">
+            <button class="icon-btn accent" onclick="iniciarEdicion(${c.id})" title="Renombrar">
+              <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+            </button>
+            <button class="icon-btn danger" onclick="eliminarCategoria(${c.id})" title="Eliminar" ${c.es_sistema ? 'disabled' : ''}>
+              <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+            </button>
+          </div>
+        </li>`
+      ).join('');
+    }
+
+    function iniciarEdicion(id) {
+      const cat = categorias.find(c => c.id === id);
+      const span = document.getElementById(`nombre-${id}`);
+
+      span.outerHTML = `
+        <input type="text" class="cat-name-input" id="nombre-${id}"
+               value="${cat.nombre}"
+               onkeydown="if(event.key==='Enter') guardarEdicion(${id}); if(event.key==='Escape') cargarCategorias();"
+               onblur="guardarEdicion(${id})"
+               autofocus>`;
+
+      const input = document.getElementById(`nombre-${id}`);
+      input.focus();
+      input.select();
+    }
+
+    async function guardarEdicion(id) {
+      const input = document.getElementById(`nombre-${id}`);
+      if (!input || input.tagName !== 'INPUT') return; // ya se guardó
+
+      const nuevoNombre = input.value.trim();
+      const cat = categorias.find(c => c.id === id);
+
+      if (!nuevoNombre || nuevoNombre === cat.nombre) {
+        await cargarCategorias();
+        return;
+      }
+
+      const res = await api(`/categorias/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ nombre: nuevoNombre }),
+      });
+
+      if (res && res.detail) {
+        alert(res.detail);
+      }
+
+      await cargarCategorias();
+    }
+
+    async function eliminarCategoria(id) {
+      if (!confirm('¿Eliminar esta categoría?')) return;
+
+      const res = await api(`/categorias/${id}`, { method: 'DELETE' });
+
+      if (res && res.detail) {
+        alert(res.detail);
+        return;
+      }
+
+      await cargarCategorias();
+    }
+
+    // ── Modal nueva categoría ──
+    function setTipo(tipo) {
+      tipoActual = tipo;
+      document.getElementById('tipo-gasto').classList.toggle('active', tipo === 'gasto');
+      document.getElementById('tipo-ingreso').classList.toggle('active', tipo === 'ingreso');
+    }
+
+    function abrirModal() {
+      document.getElementById('modal-error').classList.remove('visible');
+      document.getElementById('c-nombre').value = '';
+      setTipo('gasto');
+      document.getElementById('modal-overlay').classList.add('visible');
+      setTimeout(() => document.getElementById('c-nombre').focus(), 50);
+    }
+
+    function cerrarModal() {
+      document.getElementById('modal-overlay').classList.remove('visible');
+    }
+
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target.id === 'modal-overlay') cerrarModal();
+    });
+
+    document.getElementById('c-nombre').addEventListener('keydown', e => {
+      if (e.key === 'Enter') crearCategoria();
+    });
+
+    async function crearCategoria() {
+      const nombre = document.getElementById('c-nombre').value.trim();
+
+      if (!nombre) {
+        mostrarError('Introduce un nombre para la categoría.');
+        return;
+      }
+
+      const res = await api('/categorias', {
+        method: 'POST',
+        body: JSON.stringify({ nombre, tipo: tipoActual }),
+      });
+
+      if (res && res.detail) {
+        mostrarError(typeof res.detail === 'string' ? res.detail : 'Error al crear la categoría.');
+        return;
+      }
+
+      cerrarModal();
+      await cargarCategorias();
+    }
+
+    function mostrarError(msg) {
+      const el = document.getElementById('modal-error');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+
+    init();
+  </script>
+</body>
+</html>

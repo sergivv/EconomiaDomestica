@@ -1,0 +1,34 @@
+# docker-compose.yml
+# Levanta el sistema completo con: docker compose up -d
+
+services:
+
+  backend:
+    build: ./backend
+    container_name: economia_backend
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      TOKEN_EXPIRE_MINUTES: ${TOKEN_EXPIRE_MINUTES:-480}
+      DB_PATH: /data/economia.db
+    volumes:
+      - ./data:/data          # SQLite persiste en el NAS
+    #ports:
+    #  - "7900:8000"           # Solo para desarrollo; en producción lo cierra nginx
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7900/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    container_name: economia_frontend
+    restart: unless-stopped
+    ports:
+      - "7980:80"             # Acceso desde la red local del NAS
+    depends_on:
+      - backend
+
+# Los datos de SQLite viven en ./data en el host (tu NAS)
+# Haz backup de esa carpeta y tendrás todo guardado

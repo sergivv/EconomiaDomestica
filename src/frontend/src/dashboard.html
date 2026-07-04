@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economía doméstica — Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F7F6F2;
+      --surface:   #FFFFFF;
+      --border:    #E2E0D8;
+      --text:      #1A1A18;
+      --muted:     #6B6A64;
+      --accent:    #2A6B4F;
+      --accent-h:  #1E5039;
+      --accent-bg: #EAF4EF;
+      --danger:    #B83B3B;
+      --warning:   #92600A;
+      --warning-bg:#FEF3CD;
+      --radius:    10px;
+      --shadow:    0 2px 12px rgba(0,0,0,0.07);
+      --nav-w:     220px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #141412;
+        --surface:   #1E1E1B;
+        --border:    #2E2E2A;
+        --text:      #F0EFE9;
+        --muted:     #8A8980;
+        --accent:    #3D9970;
+        --accent-h:  #2E7A57;
+        --accent-bg: #0E2A1E;
+        --warning-bg:#2A1E05;
+      }
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      display: flex;
+    }
+
+    /* ── Navegación lateral ── */
+    nav {
+      width: var(--nav-w);
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 10;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: 0 .5rem;
+      margin-bottom: 2rem;
+    }
+
+    .nav-logo-icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav-logo-icon svg {
+      width: 18px; height: 18px;
+      fill: none; stroke: #fff;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .nav-logo-text { font-size: .9rem; font-weight: 600; }
+
+    .nav-section {
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      padding: 0 .5rem;
+      margin: 1.2rem 0 .4rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .55rem .75rem;
+      border-radius: 7px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 500;
+      transition: background .12s, color .12s;
+      margin-bottom: 2px;
+    }
+
+    .nav-link:hover { background: var(--bg); color: var(--text); }
+    .nav-link.active { background: var(--accent-bg); color: var(--accent); }
+
+    .nav-link svg {
+      width: 16px; height: 16px;
+      fill: none; stroke: currentColor;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .nav-bottom {
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .5rem .75rem;
+      border-radius: 7px;
+    }
+
+    .nav-avatar {
+      width: 28px; height: 28px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .nav-user-name { font-size: .8125rem; font-weight: 500; flex: 1; }
+
+    .btn-logout {
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      padding: .25rem; border-radius: 4px;
+      display: flex; align-items: center;
+      transition: color .12s;
+    }
+
+    .btn-logout:hover { color: var(--danger); }
+    .btn-logout svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Contenido principal ── */
+    main {
+      margin-left: var(--nav-w);
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: 960px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+    }
+
+    .page-title { font-size: 1.4rem; font-weight: 600; letter-spacing: -.02em; }
+    .page-date  { font-size: .8125rem; color: var(--muted); }
+
+    /* ── Tarjetas de cuentas ── */
+    .section-label {
+      font-size: .75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .card-label {
+      font-size: .75rem;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: .4rem;
+    }
+
+    .card-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -.02em;
+    }
+
+    .card-value.positive { color: var(--accent); }
+    .card-value.negative { color: var(--danger); }
+
+    .card-sub {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: .3rem;
+    }
+
+    /* ── Resumen del mes ── */
+    .resumen-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .resumen-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .resumen-card .label { font-size: .75rem; color: var(--muted); font-weight: 500; margin-bottom: .3rem; }
+    .resumen-card .value { font-size: 1.35rem; font-weight: 600; letter-spacing: -.02em; }
+    .resumen-card .value.ing  { color: var(--accent); }
+    .resumen-card .value.gasto { color: var(--danger); }
+
+    /* ── Dos columnas inferiores ── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title { font-size: .875rem; font-weight: 600; }
+
+    .panel-link {
+      font-size: .75rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .panel-link:hover { text-decoration: underline; }
+
+    .mov-list { list-style: none; }
+
+    .mov-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .8125rem;
+    }
+
+    .mov-item:last-child { border-bottom: none; }
+
+    .mov-left { display: flex; flex-direction: column; gap: .15rem; }
+    .mov-desc { font-weight: 500; }
+    .mov-meta { color: var(--muted); font-size: .75rem; }
+
+    .mov-importe { font-weight: 600; }
+    .mov-importe.ing   { color: var(--accent); }
+    .mov-importe.gasto { color: var(--danger); }
+
+    /* ── Transferencias pendientes ── */
+    .transferencia-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: .75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .8125rem;
+      gap: .75rem;
+    }
+
+    .transferencia-item:last-child { border-bottom: none; }
+
+    .trans-info { display: flex; flex-direction: column; gap: .15rem; flex: 1; }
+    .trans-desc { font-weight: 500; }
+    .trans-meta { color: var(--muted); font-size: .75rem; }
+
+    .btn-confirmar {
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: none;
+      border-radius: 6px;
+      padding: .35rem .75rem;
+      font-size: .75rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .12s;
+    }
+
+    .btn-confirmar:hover { background: var(--accent); color: #fff; }
+
+    .empty {
+      padding: 2rem 1.25rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: .8125rem;
+    }
+
+    .loading {
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: .8125rem;
+    }
+
+    /* ── Alerta transferencias pendientes ── */
+    .alert {
+      display: none;
+      background: var(--warning-bg);
+      border: 1px solid #F5D97A;
+      border-radius: var(--radius);
+      padding: .75rem 1rem;
+      font-size: .8125rem;
+      color: var(--warning);
+      margin-bottom: 1.5rem;
+    }
+
+    .alert.visible { display: block; }
+
+    @media (max-width: 768px) {
+      nav { display: none; }
+      main { margin-left: 0; padding: 1.25rem; }
+      .resumen-grid { grid-template-columns: 1fr; }
+      .bottom-grid  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navegación lateral -->
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      </div>
+      <span class="nav-logo-text">Casa</span>
+    </div>
+
+    <div class="nav-section">Principal</div>
+    <a href="/dashboard.html" class="nav-link active">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="/movimientos.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+      Movimientos
+    </a>
+    <a href="/informes.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Informes
+    </a>
+
+    <div class="nav-section">Gestión</div>
+    <a href="/transferencias.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+      Transferencias
+    </a>
+    <a href="/categorias.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h6"/></svg>
+      Categorías
+    </a>
+
+    <div class="nav-bottom">
+      <div class="nav-user">
+        <div class="nav-avatar" id="nav-avatar">?</div>
+        <span class="nav-user-name" id="nav-nombre">—</span>
+        <button class="btn-logout" onclick="logout()" title="Cerrar sesión">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <main>
+    <div class="page-header">
+      <h1 class="page-title">Dashboard</h1>
+      <span class="page-date" id="fecha-hoy"></span>
+    </div>
+
+    <!-- Alerta transferencias pendientes -->
+    <div class="alert" id="alert-transferencias">
+      Hay transferencias pendientes de confirmar este mes.
+    </div>
+
+    <!-- Saldos de cuentas -->
+    <div class="section-label">Día a día</div>
+    <div class="cards-grid" id="cards-cuentas-diaadia">
+      <div class="loading">Cargando…</div>
+    </div>
+
+    <div class="section-label">Ahorro</div>
+    <div class="cards-grid" id="cards-cuentas-ahorro">
+      <div class="loading">Cargando…</div>
+    </div>
+
+    <!-- Resumen del mes -->
+    <div class="section-label">Este mes</div>
+    <div class="resumen-grid">
+      <div class="resumen-card">
+        <div class="label">Ingresos</div>
+        <div class="value ing" id="res-ingresos">—</div>
+      </div>
+      <div class="resumen-card">
+        <div class="label">Gastos</div>
+        <div class="value gasto" id="res-gastos">—</div>
+      </div>
+      <div class="resumen-card">
+        <div class="label">Saldo neto</div>
+        <div class="value" id="res-neto">—</div>
+      </div>
+    </div>
+
+    <!-- Últimos movimientos + Transferencias pendientes -->
+    <div class="bottom-grid">
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Últimos movimientos</span>
+          <a href="/movimientos.html" class="panel-link">Ver todos</a>
+        </div>
+        <ul class="mov-list" id="lista-movimientos">
+          <li class="loading">Cargando…</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Transferencias pendientes</span>
+          <a href="/transferencias.html" class="panel-link">Ver todas</a>
+        </div>
+        <ul class="mov-list" id="lista-transferencias">
+          <li class="loading">Cargando…</li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const API = '/api';
+
+    // ── Autenticación ──
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/index.html';
+
+    const nombre  = localStorage.getItem('nombre') || '?';
+    document.getElementById('nav-nombre').textContent = nombre;
+    document.getElementById('nav-avatar').textContent = nombre.charAt(0).toUpperCase();
+
+    // Fecha de hoy
+    const hoy = new Date();
+    document.getElementById('fecha-hoy').textContent = hoy.toLocaleDateString('es-ES', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/index.html';
+    }
+
+    // ── Llamadas a la API ──
+    async function api(path) {
+      const res = await fetch(`${API}${path}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/index.html';
+      }
+      return res.json();
+    }
+
+    async function apiPost(path, body) {
+      const res = await fetch(`${API}${path}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      return res.json();
+    }
+
+    async function apiPut(path) {
+      const res = await fetch(`${API}${path}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.json();
+    }
+
+    function fmt(importe) {
+      return new Intl.NumberFormat('es-ES', {
+        style: 'currency', currency: 'EUR'
+      }).format(importe);
+    }
+
+    // ── Carga del dashboard ──
+    async function cargarDashboard() {
+      await Promise.all([
+        cargarCuentas(),
+        cargarResumen(),
+        cargarMovimientos(),
+        cargarTransferencias(),
+      ]);
+    }
+
+    async function cargarCuentas() {
+      const cuentas = await api('/cuentas');
+      const gridDia = document.getElementById('cards-cuentas-diaadia');
+      const gridAhorro = document.getElementById('cards-cuentas-ahorro');
+      gridDia.innerHTML = '';
+      gridAhorro.innerHTML = '';
+
+      for (const cuenta of cuentas) {
+        const saldoData = await api(`/cuentas/${cuenta.id}/saldo`);
+        const saldo = saldoData.saldo_actual;
+        const clase = saldo >= 0 ? 'positive' : 'negative';
+
+        const sub = cuenta.tipo === 'comun'
+          ? 'Cuenta compartida'
+          : cuenta.tipo === 'personal'
+            ? 'Cuenta personal'
+            : 'Ahorro';
+
+        const html = `
+          <div class="card">
+            <div class="card-label">${cuenta.nombre}</div>
+            <div class="card-value ${clase}">${fmt(saldo)}</div>
+            <div class="card-sub">${sub}</div>
+          </div>`;
+
+        if (cuenta.tipo === 'ahorro') {
+          gridAhorro.innerHTML += html;
+        } else {
+          gridDia.innerHTML += html;
+        }
+      }
+
+      if (!gridDia.innerHTML)    gridDia.innerHTML    = '<div class="empty">Sin cuentas.</div>';
+      if (!gridAhorro.innerHTML) gridAhorro.innerHTML = '<div class="empty">Sin cuentas de ahorro.</div>';
+    }
+
+    async function cargarResumen() {
+      const data = await api('/informes/resumen');
+      document.getElementById('res-ingresos').textContent = fmt(data.ingresos);
+      document.getElementById('res-gastos').textContent   = fmt(data.gastos);
+      const neto = document.getElementById('res-neto');
+      neto.textContent = fmt(data.saldo_neto);
+      neto.className = 'value ' + (data.saldo_neto >= 0 ? 'ing' : 'gasto');
+    }
+
+    async function cargarMovimientos() {
+      const movs = await api('/movimientos?limite=5');
+      const lista = document.getElementById('lista-movimientos');
+
+      if (!movs.length) {
+        lista.innerHTML = '<li class="empty">No hay movimientos este mes.</li>';
+        return;
+      }
+
+      lista.innerHTML = movs.map(m => `
+        <li class="mov-item">
+          <div class="mov-left">
+            <span class="mov-desc">${m.descripcion || m.categoria_nombre || '—'}</span>
+            <span class="mov-meta">${m.categoria_nombre} · ${m.fecha}</span>
+          </div>
+          <span class="mov-importe ${m.tipo === 'ingreso' ? 'ing' : 'gasto'}">
+            ${m.tipo === 'ingreso' ? '+' : '-'}${fmt(m.importe)}
+          </span>
+        </li>`
+      ).join('');
+    }
+
+    async function cargarTransferencias() {
+      const trans = await api('/transferencias?completada=false');
+      const lista  = document.getElementById('lista-transferencias');
+      const alerta = document.getElementById('alert-transferencias');
+
+      if (!trans.length) {
+        lista.innerHTML = '<li class="empty">Sin transferencias pendientes.</li>';
+        return;
+      }
+
+      alerta.classList.add('visible');
+
+      lista.innerHTML = trans.map(t => `
+        <li class="transferencia-item">
+          <div class="trans-info">
+            <span class="trans-desc">${t.descripcion || 'Transferencia'}</span>
+            <span class="trans-meta">${t.cuenta_origen_nombre} → ${t.cuenta_destino_nombre} · ${fmt(t.importe)}</span>
+          </div>
+          <button class="btn-confirmar" onclick="confirmarTransferencia(${t.id})">Confirmar</button>
+        </li>`
+      ).join('');
+    }
+
+    async function confirmarTransferencia(id) {
+      await apiPut(`/transferencias/${id}/confirmar`);
+      await cargarTransferencias();
+      await cargarCuentas();
+    }
+
+    cargarDashboard();
+  </script>
+</body>
+</html>

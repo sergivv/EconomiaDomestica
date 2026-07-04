@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economía doméstica — Informes</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F7F6F2;
+      --surface:   #FFFFFF;
+      --border:    #E2E0D8;
+      --text:      #1A1A18;
+      --muted:     #6B6A64;
+      --accent:    #2A6B4F;
+      --accent-h:  #1E5039;
+      --accent-bg: #EAF4EF;
+      --danger:    #B83B3B;
+      --danger-bg: #FCEEEE;
+      --radius:    10px;
+      --shadow:    0 2px 12px rgba(0,0,0,0.07);
+      --nav-w:     220px;
+
+      --c1: #2A6B4F; --c2: #B83B3B; --c3: #C9912A; --c4: #4A6FA5;
+      --c5: #8E5DB0; --c6: #5BA8A0; --c7: #C2785C; --c8: #767362;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #141412;
+        --surface:   #1E1E1B;
+        --border:    #2E2E2A;
+        --text:      #F0EFE9;
+        --muted:     #8A8980;
+        --accent:    #3D9970;
+        --accent-h:  #2E7A57;
+        --accent-bg: #0E2A1E;
+        --danger-bg: #2D1515;
+
+        --c1: #3D9970; --c2: #D17A7A; --c3: #E0AE5C; --c4: #7C9EC9;
+        --c5: #B894D4; --c6: #87CFC7; --c7: #E0A589; --c8: #A6A395;
+      }
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      display: flex;
+    }
+
+    nav {
+      width: var(--nav-w);
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 10;
+    }
+
+    .nav-logo { display: flex; align-items: center; gap: .6rem; padding: 0 .5rem; margin-bottom: 2rem; }
+    .nav-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .nav-logo-icon svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-logo-text { font-size: .9rem; font-weight: 600; }
+
+    .nav-section { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 0 .5rem; margin: 1.2rem 0 .4rem; }
+
+    .nav-link { display: flex; align-items: center; gap: .6rem; padding: .55rem .75rem; border-radius: 7px; text-decoration: none; color: var(--muted); font-size: .875rem; font-weight: 500; transition: background .12s, color .12s; margin-bottom: 2px; }
+    .nav-link:hover { background: var(--bg); color: var(--text); }
+    .nav-link.active { background: var(--accent-bg); color: var(--accent); }
+    .nav-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+    .nav-bottom { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+    .nav-user { display: flex; align-items: center; gap: .6rem; padding: .5rem .75rem; border-radius: 7px; }
+    .nav-avatar { width: 28px; height: 28px; background: var(--accent-bg); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; flex-shrink: 0; }
+    .nav-user-name { font-size: .8125rem; font-weight: 500; flex: 1; }
+    .btn-logout { background: none; border: none; color: var(--muted); cursor: pointer; padding: .25rem; border-radius: 4px; display: flex; align-items: center; transition: color .12s; }
+    .btn-logout:hover { color: var(--danger); }
+    .btn-logout svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    main {
+      margin-left: var(--nav-w);
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: 1080px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-title { font-size: 1.4rem; font-weight: 600; letter-spacing: -.02em; }
+
+    .filtros {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .filtro-field { display: flex; flex-direction: column; gap: .3rem; }
+    .filtro-field label { font-size: .7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+    select, input {
+      padding: .5rem .7rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: .8125rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    select:focus, input:focus { border-color: var(--accent); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .panel.full { grid-column: 1 / -1; }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .panel-title { font-size: .9375rem; font-weight: 600; }
+    .panel-total { font-size: .8125rem; color: var(--muted); }
+    .panel-total strong { color: var(--text); font-weight: 600; }
+
+    .chart-wrap { position: relative; height: 280px; }
+
+    .empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 280px;
+      color: var(--muted);
+      font-size: .8125rem;
+    }
+
+    .tipo-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      overflow: hidden;
+    }
+
+    .tipo-btn {
+      padding: .45rem .9rem;
+      font-size: .75rem;
+      font-weight: 500;
+      background: var(--surface);
+      color: var(--muted);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s, color .15s;
+    }
+
+    .tipo-btn.active { background: var(--accent-bg); color: var(--accent); }
+    .tipo-btn + .tipo-btn { border-left: 1px solid var(--border); }
+
+    @media (max-width: 900px) {
+      nav { display: none; }
+      main { margin-left: 0; padding: 1.25rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      </div>
+      <span class="nav-logo-text">Casa</span>
+    </div>
+
+    <div class="nav-section">Principal</div>
+    <a href="/dashboard.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="/movimientos.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+      Movimientos
+    </a>
+    <a href="/informes.html" class="nav-link active">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Informes
+    </a>
+
+    <div class="nav-section">Gestión</div>
+    <a href="/transferencias.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+      Transferencias
+    </a>
+    <a href="/categorias.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h6"/></svg>
+      Categorías
+    </a>
+
+    <div class="nav-bottom">
+      <div class="nav-user">
+        <div class="nav-avatar" id="nav-avatar">?</div>
+        <span class="nav-user-name" id="nav-nombre">—</span>
+        <button class="btn-logout" onclick="logout()" title="Cerrar sesión">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1 class="page-title">Informes</h1>
+      <div class="filtros">
+        <div class="filtro-field">
+          <label for="f-desde">Desde</label>
+          <input type="date" id="f-desde" onchange="recargarTodo()">
+        </div>
+        <div class="filtro-field">
+          <label for="f-hasta">Hasta</label>
+          <input type="date" id="f-hasta" onchange="recargarTodo()">
+        </div>
+        <div class="filtro-field">
+          <label for="f-meses">Evolución</label>
+          <select id="f-meses" onchange="cargarEvolucion()">
+            <option value="3">3 meses</option>
+            <option value="6" selected>6 meses</option>
+            <option value="12">12 meses</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel full">
+        <div class="panel-header">
+          <span class="panel-title">Evolución mensual</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart-evolucion"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Por categoría</span>
+          <div class="tipo-toggle">
+            <button class="tipo-btn active" id="cat-gasto" onclick="cambiarTipoCategoria('gasto')">Gastos</button>
+            <button class="tipo-btn" id="cat-ingreso" onclick="cambiarTipoCategoria('ingreso')">Ingresos</button>
+          </div>
+        </div>
+        <div class="panel-total" id="cat-total" style="margin-bottom: .75rem;"></div>
+        <div class="chart-wrap" id="cat-chart-wrap">
+          <canvas id="chart-categoria"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Por persona</span>
+          <div class="tipo-toggle">
+            <button class="tipo-btn active" id="per-gasto" onclick="cambiarTipoPersona('gasto')">Gastos</button>
+            <button class="tipo-btn" id="per-ingreso" onclick="cambiarTipoPersona('ingreso')">Ingresos</button>
+          </div>
+        </div>
+        <div class="panel-total" id="per-total" style="margin-bottom: .75rem;"></div>
+        <div class="chart-wrap" id="per-chart-wrap">
+          <canvas id="chart-persona"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API = '/api';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/index.html';
+
+    const nombre = localStorage.getItem('nombre') || '?';
+    document.getElementById('nav-nombre').textContent = nombre;
+    document.getElementById('nav-avatar').textContent = nombre.charAt(0).toUpperCase();
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/index.html';
+    }
+
+    async function api(path) {
+      const res = await fetch(`${API}${path}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/index.html';
+        return;
+      }
+      return res.json();
+    }
+
+    function fmt(importe) {
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(importe);
+    }
+
+    const css = getComputedStyle(document.documentElement);
+    const colores = [1,2,3,4,5,6,7,8].map(i => css.getPropertyValue(`--c${i}`).trim());
+    const colorMuted = css.getPropertyValue('--muted').trim();
+    const colorBorder = css.getPropertyValue('--border').trim();
+    const colorAccent = css.getPropertyValue('--accent').trim();
+    const colorDanger = css.getPropertyValue('--danger').trim();
+    const colorSurface = css.getPropertyValue('--surface').trim();
+
+    Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = colorMuted;
+
+    let tipoCategoria = 'gasto';
+    let tipoPersona = 'gasto';
+    let chartEvolucion, chartCategoria, chartPersona;
+
+    function rangoQuery() {
+      const desde = document.getElementById('f-desde').value;
+      const hasta = document.getElementById('f-hasta').value;
+      const params = new URLSearchParams();
+      if (desde) params.set('fecha_desde', desde);
+      if (hasta) params.set('fecha_hasta', hasta);
+      return params.toString();
+    }
+
+    async function cargarEvolucion() {
+      const meses = document.getElementById('f-meses').value;
+      const data = await api(`/informes/evolucion?meses=${meses}`);
+
+      const labels = data.datos.map(d => d.etiqueta);
+      const ingresos = data.datos.map(d => d.ingresos);
+      const gastos = data.datos.map(d => d.gastos);
+
+      if (chartEvolucion) chartEvolucion.destroy();
+
+      chartEvolucion = new Chart(document.getElementById('chart-evolucion'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Ingresos',
+              data: ingresos,
+              borderColor: colorAccent,
+              backgroundColor: colorAccent + '22',
+              tension: .3,
+              fill: true,
+              pointRadius: 3,
+            },
+            {
+              label: 'Gastos',
+              data: gastos,
+              borderColor: colorDanger,
+              backgroundColor: colorDanger + '22',
+              tension: .3,
+              fill: true,
+              pointRadius: 3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', align: 'end', labels: { boxWidth: 12, usePointStyle: true } },
+            tooltip: {
+              callbacks: { label: ctx => `${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, border: { color: colorBorder } },
+            y: {
+              grid: { color: colorBorder },
+              border: { display: false },
+              ticks: { callback: v => fmt(v) }
+            }
+          }
+        }
+      });
+    }
+
+    function cambiarTipoCategoria(tipo) {
+      tipoCategoria = tipo;
+      document.getElementById('cat-gasto').classList.toggle('active', tipo === 'gasto');
+      document.getElementById('cat-ingreso').classList.toggle('active', tipo === 'ingreso');
+      cargarCategorias();
+    }
+
+    async function cargarCategorias() {
+      const data = await api(`/informes/por-categoria?tipo=${tipoCategoria}&${rangoQuery()}`);
+      const wrap = document.getElementById('cat-chart-wrap');
+      const totalEl = document.getElementById('cat-total');
+
+      const conDatos = data.categorias.filter(c => c.total > 0);
+
+      totalEl.innerHTML = `Total: <strong>${fmt(data.total)}</strong>`;
+
+      if (!conDatos.length) {
+        wrap.innerHTML = '<div class="empty">Sin datos en este período.</div>';
+        return;
+      }
+
+      if (!document.getElementById('chart-categoria')) {
+        wrap.innerHTML = '<canvas id="chart-categoria"></canvas>';
+      }
+
+      if (chartCategoria) chartCategoria.destroy();
+
+      chartCategoria = new Chart(document.getElementById('chart-categoria'), {
+        type: 'doughnut',
+        data: {
+          labels: conDatos.map(c => c.categoria),
+          datasets: [{
+            data: conDatos.map(c => c.total),
+            backgroundColor: colores,
+            borderColor: colorSurface,
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '60%',
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { boxWidth: 12, usePointStyle: true, padding: 12, font: { size: 11 } }
+            },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const item = conDatos[ctx.dataIndex];
+                  return `${item.categoria}: ${fmt(item.total)} (${item.porcentaje}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function cambiarTipoPersona(tipo) {
+      tipoPersona = tipo;
+      document.getElementById('per-gasto').classList.toggle('active', tipo === 'gasto');
+      document.getElementById('per-ingreso').classList.toggle('active', tipo === 'ingreso');
+      cargarPersonas();
+    }
+
+    async function cargarPersonas() {
+      const data = await api(`/informes/por-persona?tipo=${tipoPersona}&${rangoQuery()}`);
+      const wrap = document.getElementById('per-chart-wrap');
+      const totalEl = document.getElementById('per-total');
+
+      totalEl.innerHTML = `Total hogar: <strong>${fmt(data.total_hogar)}</strong>`;
+
+      if (!data.usuarios.length || data.total_hogar === 0) {
+        wrap.innerHTML = '<div class="empty">Sin datos en este período.</div>';
+        return;
+      }
+
+      if (!document.getElementById('chart-persona')) {
+        wrap.innerHTML = '<canvas id="chart-persona"></canvas>';
+      }
+
+      if (chartPersona) chartPersona.destroy();
+
+      chartPersona = new Chart(document.getElementById('chart-persona'), {
+        type: 'bar',
+        data: {
+          labels: data.usuarios.map(u => `${u.usuario} (${u.porcentaje}%)`),
+          datasets: [{
+            data: data.usuarios.map(u => u.total),
+            backgroundColor: [colorAccent, colorDanger],
+            borderRadius: 6,
+            barThickness: 32,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: { label: ctx => fmt(ctx.parsed.x) }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: colorBorder },
+              border: { display: false },
+              ticks: { callback: v => fmt(v) }
+            },
+            y: { grid: { display: false }, border: { color: colorBorder } }
+          }
+        }
+      });
+    }
+
+    function recargarTodo() {
+      cargarCategorias();
+      cargarPersonas();
+    }
+
+    cargarEvolucion();
+    cargarCategorias();
+    cargarPersonas();
+  </script>
+</body>
+</html>

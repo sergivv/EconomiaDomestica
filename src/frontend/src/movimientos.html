@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economía doméstica — Movimientos</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F7F6F2;
+      --surface:   #FFFFFF;
+      --border:    #E2E0D8;
+      --text:      #1A1A18;
+      --muted:     #6B6A64;
+      --accent:    #2A6B4F;
+      --accent-h:  #1E5039;
+      --accent-bg: #EAF4EF;
+      --danger:    #B83B3B;
+      --danger-bg: #FCEEEE;
+      --radius:    10px;
+      --shadow:    0 2px 12px rgba(0,0,0,0.07);
+      --nav-w:     220px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #141412;
+        --surface:   #1E1E1B;
+        --border:    #2E2E2A;
+        --text:      #F0EFE9;
+        --muted:     #8A8980;
+        --accent:    #3D9970;
+        --accent-h:  #2E7A57;
+        --accent-bg: #0E2A1E;
+        --danger-bg: #2D1515;
+      }
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      display: flex;
+    }
+
+    /* ── Navegación lateral (idéntica al dashboard) ── */
+    nav {
+      width: var(--nav-w);
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 10;
+    }
+
+    .nav-logo { display: flex; align-items: center; gap: .6rem; padding: 0 .5rem; margin-bottom: 2rem; }
+    .nav-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .nav-logo-icon svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-logo-text { font-size: .9rem; font-weight: 600; }
+
+    .nav-section { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 0 .5rem; margin: 1.2rem 0 .4rem; }
+
+    .nav-link { display: flex; align-items: center; gap: .6rem; padding: .55rem .75rem; border-radius: 7px; text-decoration: none; color: var(--muted); font-size: .875rem; font-weight: 500; transition: background .12s, color .12s; margin-bottom: 2px; }
+    .nav-link:hover { background: var(--bg); color: var(--text); }
+    .nav-link.active { background: var(--accent-bg); color: var(--accent); }
+    .nav-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+    .nav-bottom { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+    .nav-user { display: flex; align-items: center; gap: .6rem; padding: .5rem .75rem; border-radius: 7px; }
+    .nav-avatar { width: 28px; height: 28px; background: var(--accent-bg); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; flex-shrink: 0; }
+    .nav-user-name { font-size: .8125rem; font-weight: 500; flex: 1; }
+    .btn-logout { background: none; border: none; color: var(--muted); cursor: pointer; padding: .25rem; border-radius: 4px; display: flex; align-items: center; transition: color .12s; }
+    .btn-logout:hover { color: var(--danger); }
+    .btn-logout svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Contenido principal ── */
+    main {
+      margin-left: var(--nav-w);
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: 980px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-title { font-size: 1.4rem; font-weight: 600; letter-spacing: -.02em; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: .6rem 1.1rem;
+      font-size: .8125rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: background .15s;
+    }
+
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Filtros ── */
+    .filtros {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    .filtro-field { display: flex; flex-direction: column; gap: .3rem; }
+    .filtro-field label { font-size: .7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+    select, input {
+      padding: .5rem .7rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: .8125rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    select:focus, input:focus { border-color: var(--accent); }
+
+    .filtro-clear {
+      align-self: flex-end;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: .5rem .9rem;
+      font-size: .8125rem;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .filtro-clear:hover { color: var(--text); border-color: var(--muted); }
+
+    /* ── Tabla de movimientos ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .mov-list { list-style: none; }
+
+    .mov-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .8125rem;
+      gap: 1rem;
+    }
+
+    .mov-item:last-child { border-bottom: none; }
+
+    .mov-left { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+    .mov-desc { font-weight: 500; }
+    .mov-meta { color: var(--muted); font-size: .75rem; }
+
+    .mov-right { display: flex; align-items: center; gap: .85rem; flex-shrink: 0; }
+    .mov-importe { font-weight: 600; min-width: 90px; text-align: right; }
+    .mov-importe.ing   { color: var(--accent); }
+    .mov-importe.gasto { color: var(--danger); }
+
+    .mov-actions { display: flex; gap: .35rem; }
+
+    .icon-btn {
+      width: 28px; height: 28px;
+      border: none;
+      background: none;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      transition: background .12s, color .12s;
+    }
+
+    .icon-btn:hover { background: var(--bg); color: var(--text); }
+    .icon-btn.danger:hover { background: var(--danger-bg); color: var(--danger); }
+    .icon-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .empty, .loading {
+      padding: 2.5rem 1.25rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: .8125rem;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+
+    .modal-overlay.visible { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 420px;
+      padding: 1.75rem;
+    }
+
+    .modal h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; }
+
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: .8125rem; font-weight: 500; margin-bottom: .35rem; }
+    .field input, .field select { width: 100%; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+
+    .tipo-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .tipo-btn {
+      flex: 1;
+      padding: .55rem;
+      text-align: center;
+      font-size: .8125rem;
+      font-weight: 500;
+      background: var(--bg);
+      color: var(--muted);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s, color .15s;
+    }
+
+    .tipo-btn.active.ing   { background: var(--accent-bg); color: var(--accent); }
+    .tipo-btn.active.gasto { background: var(--danger-bg); color: var(--danger); }
+
+    .modal-actions {
+      display: flex;
+      gap: .6rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .65rem;
+      font-size: .8125rem;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-secondary:hover { border-color: var(--muted); }
+
+    .modal-actions .btn-primary { flex: 1; justify-content: center; }
+
+    .error {
+      display: none;
+      background: var(--danger-bg);
+      color: var(--danger);
+      font-size: .8125rem;
+      padding: .6rem .85rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+
+    .error.visible { display: block; }
+
+    @media (max-width: 768px) {
+      nav { display: none; }
+      main { margin-left: 0; padding: 1.25rem; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navegación lateral -->
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      </div>
+      <span class="nav-logo-text">Casa</span>
+    </div>
+
+    <div class="nav-section">Principal</div>
+    <a href="/dashboard.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a href="/movimientos.html" class="nav-link active">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+      Movimientos
+    </a>
+    <a href="/informes.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Informes
+    </a>
+
+    <div class="nav-section">Gestión</div>
+    <a href="/transferencias.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+      Transferencias
+    </a>
+    <a href="/categorias.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h6"/></svg>
+      Categorías
+    </a>
+
+    <div class="nav-bottom">
+      <div class="nav-user">
+        <div class="nav-avatar" id="nav-avatar">?</div>
+        <span class="nav-user-name" id="nav-nombre">—</span>
+        <button class="btn-logout" onclick="logout()" title="Cerrar sesión">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido principal -->
+  <main>
+    <div class="page-header">
+      <h1 class="page-title">Movimientos</h1>
+      <button class="btn-primary" onclick="abrirModal()">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo movimiento
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros">
+      <div class="filtro-field">
+        <label for="f-cuenta">Cuenta</label>
+        <select id="f-cuenta" onchange="aplicarFiltros()">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="filtro-field">
+        <label for="f-categoria">Categoría</label>
+        <select id="f-categoria" onchange="aplicarFiltros()">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="filtro-field">
+        <label for="f-tipo">Tipo</label>
+        <select id="f-tipo" onchange="aplicarFiltros()">
+          <option value="">Todos</option>
+          <option value="ingreso">Ingresos</option>
+          <option value="gasto">Gastos</option>
+        </select>
+      </div>
+      <div class="filtro-field">
+        <label for="f-desde">Desde</label>
+        <input type="date" id="f-desde" onchange="aplicarFiltros()">
+      </div>
+      <div class="filtro-field">
+        <label for="f-hasta">Hasta</label>
+        <input type="date" id="f-hasta" onchange="aplicarFiltros()">
+      </div>
+      <button class="filtro-clear" onclick="limpiarFiltros()">Limpiar</button>
+    </div>
+
+    <!-- Listado -->
+    <div class="panel">
+      <ul class="mov-list" id="lista-movimientos">
+        <li class="loading">Cargando…</li>
+      </ul>
+    </div>
+  </main>
+
+  <!-- Modal alta / edición -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Nuevo movimiento</h2>
+
+      <div class="error" id="modal-error"></div>
+
+      <div class="tipo-toggle">
+        <button type="button" class="tipo-btn active ing" id="tipo-ingreso" onclick="setTipo('ingreso')">Ingreso</button>
+        <button type="button" class="tipo-btn gasto" id="tipo-gasto" onclick="setTipo('gasto')">Gasto</button>
+      </div>
+
+      <div class="field">
+        <label for="m-importe">Importe (€)</label>
+        <input type="number" id="m-importe" step="0.01" min="0" placeholder="0.00">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="m-cuenta">Cuenta</label>
+          <select id="m-cuenta"></select>
+        </div>
+        <div class="field">
+          <label for="m-categoria">Categoría</label>
+          <select id="m-categoria"></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="m-fecha">Fecha</label>
+        <input type="date" id="m-fecha">
+      </div>
+
+      <div class="field">
+        <label for="m-descripcion">Descripción (opcional)</label>
+        <input type="text" id="m-descripcion" placeholder="Ej: Supermercado">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-primary" onclick="guardarMovimiento()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/index.html';
+
+    const nombre = localStorage.getItem('nombre') || '?';
+    document.getElementById('nav-nombre').textContent = nombre;
+    document.getElementById('nav-avatar').textContent = nombre.charAt(0).toUpperCase();
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/index.html';
+    }
+
+    // ── Helpers API ──
+    async function api(path, options = {}) {
+      const res = await fetch(`${API}${path}`, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+          ...options.headers,
+        },
+      });
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/index.html';
+        return;
+      }
+      if (res.status === 204) return null;
+      return res.json();
+    }
+
+    function fmt(importe) {
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(importe);
+    }
+
+    // ── Estado ──
+    let cuentas = [];
+    let categorias = [];
+    let editandoId = null;
+    let tipoActual = 'ingreso';
+
+    // ── Carga inicial ──
+    async function init() {
+      cuentas = await api('/cuentas');
+      categorias = await api('/categorias');
+
+      // Selects de filtros
+      const fCuenta = document.getElementById('f-cuenta');
+      cuentas.forEach(c => fCuenta.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+
+      const fCategoria = document.getElementById('f-categoria');
+      categorias.forEach(c => fCategoria.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+
+      // Selects del modal
+      const mCuenta = document.getElementById('m-cuenta');
+      cuentas.forEach(c => mCuenta.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+
+      poblarCategoriasModal();
+
+      await cargarMovimientos();
+    }
+
+    function poblarCategoriasModal() {
+      const mCategoria = document.getElementById('m-categoria');
+      mCategoria.innerHTML = '';
+      categorias
+        .filter(c => c.tipo === tipoActual)
+        .forEach(c => mCategoria.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+    }
+
+    // ── Filtros ──
+    function construirQuery() {
+      const params = new URLSearchParams();
+      const cuenta = document.getElementById('f-cuenta').value;
+      const categoria = document.getElementById('f-categoria').value;
+      const tipo = document.getElementById('f-tipo').value;
+      const desde = document.getElementById('f-desde').value;
+      const hasta = document.getElementById('f-hasta').value;
+
+      if (cuenta) params.set('cuenta_id', cuenta);
+      if (categoria) params.set('categoria_id', categoria);
+      if (tipo) params.set('tipo', tipo);
+      if (desde) params.set('fecha_desde', desde);
+      if (hasta) params.set('fecha_hasta', hasta);
+      params.set('limite', '200');
+
+      return params.toString();
+    }
+
+    async function aplicarFiltros() {
+      await cargarMovimientos();
+    }
+
+    function limpiarFiltros() {
+      document.getElementById('f-cuenta').value = '';
+      document.getElementById('f-categoria').value = '';
+      document.getElementById('f-tipo').value = '';
+      document.getElementById('f-desde').value = '';
+      document.getElementById('f-hasta').value = '';
+      cargarMovimientos();
+    }
+
+    // ── Listado ──
+    async function cargarMovimientos() {
+      const lista = document.getElementById('lista-movimientos');
+      lista.innerHTML = '<li class="loading">Cargando…</li>';
+
+      const movs = await api(`/movimientos?${construirQuery()}`);
+
+      if (!movs.length) {
+        lista.innerHTML = '<li class="empty">No hay movimientos con estos filtros.</li>';
+        return;
+      }
+
+      lista.innerHTML = movs.map(m => `
+        <li class="mov-item">
+          <div class="mov-left">
+            <span class="mov-desc">${m.descripcion || m.categoria_nombre || '—'}</span>
+            <span class="mov-meta">${m.cuenta_nombre} · ${m.categoria_nombre} · ${m.usuario_nombre} · ${formatFecha(m.fecha)}</span>
+          </div>
+          <div class="mov-right">
+            <span class="mov-importe ${m.tipo === 'ingreso' ? 'ing' : 'gasto'}">
+              ${m.tipo === 'ingreso' ? '+' : '-'}${fmt(m.importe)}
+            </span>
+            <div class="mov-actions">
+              <button class="icon-btn" onclick='editarMovimiento(${JSON.stringify(m)})' title="Editar">
+                <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+              </button>
+              <button class="icon-btn danger" onclick="borrarMovimiento(${m.id})" title="Eliminar">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+              </button>
+            </div>
+          </div>
+        </li>`
+      ).join('');
+    }
+
+    function formatFecha(f) {
+      const [y, m, d] = f.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    // ── Modal ──
+    function setTipo(tipo) {
+      tipoActual = tipo;
+      document.getElementById('tipo-ingreso').classList.toggle('active', tipo === 'ingreso');
+      document.getElementById('tipo-gasto').classList.toggle('active', tipo === 'gasto');
+      poblarCategoriasModal();
+    }
+
+    function abrirModal() {
+      editandoId = null;
+      document.getElementById('modal-title').textContent = 'Nuevo movimiento';
+      document.getElementById('modal-error').classList.remove('visible');
+      document.getElementById('m-importe').value = '';
+      document.getElementById('m-descripcion').value = '';
+      document.getElementById('m-fecha').value = new Date().toISOString().split('T')[0];
+
+      // Preseleccionar la cuenta personal del usuario logueado
+      const userId = parseInt(localStorage.getItem('user_id'));
+      const cuentaPropia = cuentas.find(c => c.usuario_id === userId);
+      document.getElementById('m-cuenta').value = cuentaPropia ? cuentaPropia.id : cuentas[0]?.id;
+
+      setTipo('ingreso');
+      document.getElementById('modal-overlay').classList.add('visible');
+    }
+
+    function editarMovimiento(m) {
+      editandoId = m.id;
+      document.getElementById('modal-title').textContent = 'Editar movimiento';
+      document.getElementById('modal-error').classList.remove('visible');
+      document.getElementById('m-importe').value = m.importe;
+      document.getElementById('m-descripcion').value = m.descripcion || '';
+      document.getElementById('m-fecha').value = m.fecha;
+      document.getElementById('m-cuenta').value = m.cuenta_id;
+      setTipo(m.tipo);
+      document.getElementById('m-categoria').value = m.categoria_id;
+      document.getElementById('modal-overlay').classList.add('visible');
+    }
+
+    function cerrarModal() {
+      document.getElementById('modal-overlay').classList.remove('visible');
+    }
+
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target.id === 'modal-overlay') cerrarModal();
+    });
+
+    async function guardarMovimiento() {
+      const errorEl = document.getElementById('modal-error');
+      const importe = parseFloat(document.getElementById('m-importe').value);
+      const cuenta_id = parseInt(document.getElementById('m-cuenta').value);
+      const categoria_id = parseInt(document.getElementById('m-categoria').value);
+      const fecha = document.getElementById('m-fecha').value;
+      const descripcion = document.getElementById('m-descripcion').value.trim() || null;
+
+      if (!importe || importe <= 0) {
+        mostrarError('Introduce un importe válido mayor que 0.');
+        return;
+      }
+      if (!fecha) {
+        mostrarError('Selecciona una fecha.');
+        return;
+      }
+
+      const body = {
+        cuenta_id,
+        categoria_id,
+        importe,
+        tipo: tipoActual,
+        descripcion,
+        fecha,
+      };
+
+      let res;
+      if (editandoId) {
+        res = await api(`/movimientos/${editandoId}`, {
+          method: 'PUT',
+          body: JSON.stringify(body),
+        });
+      } else {
+        res = await api('/movimientos', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        });
+      }
+
+      if (res && res.detail) {
+        mostrarError(typeof res.detail === 'string' ? res.detail : 'Error al guardar.');
+        return;
+      }
+
+      cerrarModal();
+      await cargarMovimientos();
+    }
+
+    async function borrarMovimiento(id) {
+      if (!confirm('¿Eliminar este movimiento? Esta acción no se puede deshacer.')) return;
+      const res = await api(`/movimientos/${id}`, { method: 'DELETE' });
+      if (res && res.detail) {
+        alert(res.detail);
+        return;
+      }
+      await cargarMovimientos();
+    }
+
+    function mostrarError(msg) {
+      const el = document.getElementById('modal-error');
+      el.textContent = msg;
+      el.classList.add('visible');
+    }
+
+    init();
+  </script>
+</body>
+</html>
